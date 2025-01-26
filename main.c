@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "minesweeper.h"
+#include "game.h"
 
 int main() {
     srand(time(NULL));

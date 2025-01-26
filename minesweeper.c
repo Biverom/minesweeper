@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "utils.h"
+#include "game.h"
 
 #include "minesweeper.h"
 
@@ -243,31 +244,59 @@ bool toggleFlagOnCell(Field* field, int x, int y) {
     return true;
 }
 
-void runUserCommand(Field* field, char* action) {
+bool openCellCommand(Field* field, const char* action) {
     int x, y;
+    if (sscanf(action, "%*c %d %d", &x, &y) == 2) {
+        bool success = openCell(field, x, y);
+        if (success) checkWin(field);
+        return success;
+    }
+    return false;
+}
+
+bool toggleFlagCommand(Field* field, const char* action) {
+    int x, y;
+    if (sscanf(action, "%*c %d %d", &x, &y) == 2) {
+        return toggleFlagOnCell(field, x, y);
+    }
+    return false;
+}
+
+bool leaveGameCommand(Field* field, const char* action) {
+    field->state = EXIT;
+    return true;
+}
+
+void runUserCommand(Field* field, char* action) {
     char command;
     bool success = false;
-    if (sscanf(action, "%c %d %d", &command, &x, &y) == 3) {
-        if (command == 'o') {
-            success = openCell(field, x, y);
-            checkWin(field);
-        } else if (command == 'f') {
-            success = toggleFlagOnCell(field, x, y);
-        }
-    } else if (sscanf(action, "%c", &command) == 1) {
-        if (command == 'e') {
-            field->state = EXIT;
-            success = true;
+
+    if (sscanf(action, "%c", &command) == 1) {
+        switch (command) {
+            case 'o':
+            case 'O':
+                success = openCellCommand(field, action);
+                break;
+
+            case 'f':
+            case 'F':
+                success = toggleFlagCommand(field, action);
+                break;
+
+            case 'x':
+            case 'X':
+                success = leaveGameCommand(field, action);
+                break;
         }
     }
+
     if (!success) {
         printf("Invalid command!\n");
     }
 }
 
-void gameLoop() {
-    Field* field = createField(4, 4, 1);
 
+void minesweeperLoop(Field* field) {
     while (field->state == INGAME) {
         printField(field);
 

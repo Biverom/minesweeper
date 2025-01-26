@@ -44,7 +44,10 @@ void checkWin(Field* field);
 void openCellLoop(Field* field, CellNode* listToOpen);
 bool openCell(Field* field, int x, int y);
 bool toggleFlagOnCell(Field* field, int x, int y);
+bool openCellCommand(Field* field, const char* action);
+bool toggleFlagCommand(Field* field, const char* action);
+bool leaveGameCommand(Field* field, const char* action);
 void runUserCommand(Field* field, char* action);
-void gameLoop();
+void minesweeperLoop(Field* field);
 
 #endif
