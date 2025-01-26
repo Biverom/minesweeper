@@ -3,6 +3,7 @@
         "time.h": "c",
         "stdbool.h": "c",
         "stdio.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "minesweeper.h": "c"
     }
 }

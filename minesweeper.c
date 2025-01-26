@@ -5,7 +5,7 @@
 
 #include "utils.h"
 
-#include "game.h"
+#include "minesweeper.h"
 
 CellNode* addCellNode(CellNode* list, Cell* cell, int x, int y) {
     CellNode* cellNode = list;
@@ -29,7 +29,7 @@ Field* createField(int width, int height, int mines) {
     field->height = height;
     field->mines = mines;
     field->firstMove = true;
-    field->gameOver = false;
+    field->state = INGAME;
 
     field->grid = malloc(height * sizeof(Cell*));
     for (int i = 0; i < height; i++) {
@@ -62,10 +62,17 @@ void printField(Field* field) {
         printf("%0*d   ", heightDigits, i);
         for (int j = 0; j < field->width; j++) {
             Cell cell = field->grid[i][j];
-            printf("%c ", cell.state == OPEN ? cell.symbol : '#');
+            if (cell.state == CLOSED) {
+                printf("# ");
+            } else if (cell.state == FLAG) {
+                printf("F ");
+            } else {
+                printf("%c ", cell.symbol);
+            }
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 void freeField(Field* field) {
@@ -128,6 +135,25 @@ void renderField(Field* field) {
     }
 }
 
+int countCellsWithState(Field* field, CellState state) {
+    int closedCells = 0;
+    for (int i = 0; i < field->height; i++) {
+        for (int j = 0; j < field->width; j++) {
+            if (field->grid[i][j].state == state) {
+                closedCells++;
+            }
+        }
+    }
+    return closedCells;
+}
+
+void checkWin(Field* field) {
+    int closedCells = (field->width * field->height) - countCellsWithState(field, OPEN);
+    if (closedCells <= field->mines) {
+        field->state = WIN;
+    }
+}
+
 void openCellLoop(Field* field, CellNode* listToOpen) {
     CellNode* current = listToOpen;
     CellNode* nextList = NULL;
@@ -163,9 +189,27 @@ void openCellLoop(Field* field, CellNode* listToOpen) {
 
 bool openCell(Field* field, int x, int y) {
     Cell* cell = getCell(field, x, y);
-    if (cell == NULL || cell->state != CLOSED) {
+
+    if (cell == NULL) {
         return false;
     }
+
+    if (cell->state == OPEN) {
+        bool res = false;
+        for (int i = y - 1; i <= y + 1; i++) {
+            for (int j = x - 1; j <= x + 1; j++) {
+                if (i == y && j == x) {
+                    continue;
+                }
+                Cell* neighbor = getCell(field, j, i);
+                if (neighbor != NULL && neighbor->state == CLOSED) {
+                    res |= openCell(field, j, i);
+                }
+            }
+        }
+        return res;
+    }
+
 
     if (field->firstMove) {
         populateField(field, x, y);
@@ -174,7 +218,7 @@ bool openCell(Field* field, int x, int y) {
     }
 
     if (cell->isMine) {
-        field->gameOver = true;
+        field->state = LOOSE;
         return false;
     }
 
@@ -189,12 +233,52 @@ bool openCell(Field* field, int x, int y) {
     return true;
 }
 
+bool toggleFlagOnCell(Field* field, int x, int y) {
+    Cell* cell = getCell(field, x, y);
+    if (cell == NULL || cell->state == OPEN) {
+        return false;
+    }
+
+    cell->state = cell->state == FLAG ? CLOSED : FLAG;
+    return true;
+}
+
+void runUserCommand(Field* field, char* action) {
+    int x, y;
+    char command;
+    bool success = false;
+    if (sscanf(action, "%c %d %d", &command, &x, &y) == 3) {
+        if (command == 'o') {
+            success = openCell(field, x, y);
+            checkWin(field);
+        } else if (command == 'f') {
+            success = toggleFlagOnCell(field, x, y);
+        }
+    } else if (sscanf(action, "%c", &command) == 1) {
+        if (command == 'e') {
+            field->state = EXIT;
+            success = true;
+        }
+    }
+    if (!success) {
+        printf("Invalid command!\n");
+    }
+}
 
 void gameLoop() {
-    Field* field = createField(50, 50, 250);
+    Field* field = createField(4, 4, 1);
 
-    openCell(field, 25, 25);
+    while (field->state == INGAME) {
+        printField(field);
+
+        char action[16] = "";
+        printf("Enter command: ");
+        fgets(action, sizeof(action), stdin);
+        runUserCommand(field, action);
+        printf("\n");
+    }
     printField(field);
+    printf("Game over! You %s!\n", field->state == WIN ? "won" : "lost");
 
     freeField(field);
 }

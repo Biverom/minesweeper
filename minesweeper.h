@@ -1,17 +1,18 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef MINESWEEPER_H
+#define MINESWEEPER_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
 
-typedef enum { CLOSED, OPEN, FLAG } State;
+typedef enum { CLOSED, OPEN, FLAG } CellState;
+typedef enum { INGAME, WIN, LOOSE, EXIT } FieldState;
 
 typedef struct {
     char symbol;
     bool isMine;
-    State state;
+    CellState state;
 } Cell;
 
 typedef struct {
@@ -20,7 +21,7 @@ typedef struct {
     int height;
     int mines;
     bool firstMove;
-    bool gameOver;
+    FieldState state;
 } Field;
 
 typedef struct CellNode {
@@ -38,8 +39,12 @@ Cell* getCell(Field* field, int x, int y);
 int countMines(Field* field, int x, int y);
 void populateField(Field* field, int x, int y);
 void renderField(Field* field);
+int countClosedCells(Field* field);
+void checkWin(Field* field);
 void openCellLoop(Field* field, CellNode* listToOpen);
 bool openCell(Field* field, int x, int y);
+bool toggleFlagOnCell(Field* field, int x, int y);
+void runUserCommand(Field* field, char* action);
 void gameLoop();
 
 #endif
