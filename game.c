@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <time.h>
 
+#include "utils.h"
+
 #include "game.h"
 
 CellNode* addCellNode(CellNode* list, Cell* cell, int x, int y) {
@@ -43,7 +45,21 @@ Field* createField(int width, int height, int mines) {
 }
 
 void printField(Field* field) {
+
+    int widthDigits = numPlaces(field->width - 1);
+    int heightDigits = numPlaces(field->height - 1);
+
+    for (int i = widthDigits; i > 0; i--) {
+        printf("%*s", heightDigits + 3, "");
+        for (int j = 0; j < field->width; j++) {
+            printf("%d ", getNthDigit(j, i));
+        }
+        printf("\n");
+    }
+    printf("\n");
+
     for (int i = 0; i < field->height; i++) {
+        printf("%0*d   ", heightDigits, i);
         for (int j = 0; j < field->width; j++) {
             Cell cell = field->grid[i][j];
             printf("%c ", cell.state == OPEN ? cell.symbol : '#');
