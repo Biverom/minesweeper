@@ -35,7 +35,7 @@ typedef struct CellNode {
 } CellNode;
 
 CellNode* addCellNode(CellNode* list, Cell* cell, int x, int y);
-Field* createField(int width, int height, int mines);
+Field* createField(int width, int height, int mines, unsigned int seed);
 Field* createFieldFromRecord(FILE* record);
 
 void printField(Field* field);

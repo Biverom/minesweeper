@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "utils.h"
+
 #include "minesweeper.h"
 
 void handleGame(Field* field) {
@@ -10,6 +12,22 @@ void handleGame(Field* field) {
         minesweeperLoop(field);
 
         freeField(field);
+
+        printf("Provide a name for the record (Leave empty to not save): ");
+        char name[100];
+        fgets(name, sizeof(name), stdin);
+
+        name[strcspn(name, "\n")] = '\0';
+
+        if (name[0] != '\0') {
+            char destPath[150];
+            snprintf(destPath, sizeof(destPath), "saves/records/%s.msrec", name);
+            char sourcePath[] = "saves/records/latest.msrec";
+            fixpath(destPath);
+            fixpath(sourcePath);
+            copyFile(sourcePath, destPath);
+            printf("Record saved!\n");
+        }
     }
 }
 
@@ -18,39 +36,42 @@ void playGame() {
     bool back = false;
 
     while (true) {
+        unsigned int seed = time(NULL);
+
         printf("\nChoose difficulty:\n[E] Easy\n[M] Medium\n[H] Hard\n[C] Custom\n[B] Back\n");
-        char input[100];
+        char input[3];
         fgets(input, sizeof(input), stdin);
 
         char command;
         bool success = false;
-        if (sscanf(input, "%c", &command) == 1) {
+        if (sscanf(input, "%c\n", &command) == 1) {
             switch (command) {
                 case 'e':
                 case 'E':
-                    field = createField(9, 9, 10);
+                    field = createField(9, 9, 10, seed);
                     success = true;
                     break;
                 case 'm':
                 case 'M':
-                    field = createField(16, 16, 40);
+                    field = createField(16, 16, 40, seed);
                     success = true;
                     break;
                 case 'h':
                 case 'H':
-                    field = createField(30, 16, 99);
+                    field = createField(30, 16, 99, seed);
                     success = true;
                     break;
-                case 'c':
-                case 'C':
+                    case 'c':
+                    case 'C':
                     {
                         int rows, cols, numMines;
                         printf("Enter the number of rows, columns, and mines: ");
-                        if (scanf("%d %d %d\n", &rows, &cols, &numMines) != 3 || rows <= 0 || cols <= 0 || numMines <= 0 || numMines >= rows * cols) {
+                        if (scanf("%d %d %d", &rows, &cols, &numMines) != 3 || rows <= 0 || cols <= 0 || numMines <= 0 || numMines >= rows * cols) {
                             printf("Invalid input!\n");
                             break;
-                        };
-                        field = createField(rows, cols, numMines);
+                        }
+                        getchar();
+                        field = createField(rows, cols, numMines, seed);
                         success = true;
                     }
                     break;
@@ -96,11 +117,11 @@ void gameLoop() {
     while (!close)
     {
         printf("\nWelcome to Minesweeper!\nWhat would you like to do?\n[P] Play\n[R] Play record\n[X] Exit\n");
-        char input[100];
+        char input[3];
         fgets(input, sizeof(input), stdin);
 
         char command;
-        if (sscanf(input, "%c", &command) == 1) {
+        if (sscanf(input, "%c\n", &command) == 1) {
             switch (command) {
                 case 'p':
                 case 'P':

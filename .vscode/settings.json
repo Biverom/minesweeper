@@ -4,6 +4,8 @@
         "stdbool.h": "c",
         "stdio.h": "c",
         "stdlib.h": "c",
-        "minesweeper.h": "c"
+        "minesweeper.h": "c",
+        "string.h": "c",
+        "leaderboard.h": "c"
     }
 }

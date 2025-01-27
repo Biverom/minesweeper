@@ -24,7 +24,7 @@ CellNode* addCellNode(CellNode* list, Cell* cell, int x, int y) {
     return newCellNode;
 }
 
-Field* createField(int width, int height, int mines) {
+Field* createField(int width, int height, int mines, unsigned int seed) {
     Field* field = (Field*)malloc(sizeof(Field));
     field->width = width;
     field->height = height;
@@ -32,7 +32,7 @@ Field* createField(int width, int height, int mines) {
     field->firstMove = true;
     field->state = INGAME;
 
-    field->seed = time(NULL);
+    field->seed = seed;
 
     field->readRecord = NULL;
 
@@ -63,7 +63,7 @@ Field* createFieldFromRecord(FILE* record) {
     fscanf(record, "%d %d %d\n", &width, &height, &mines);
     fscanf(record, "%d\n", &seed);
 
-    Field* field = createField(width, height, mines);
+    Field* field = createField(width, height, mines, seed);
 
     field->seed = seed;
     field->readRecord = record;
