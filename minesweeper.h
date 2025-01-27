@@ -25,6 +25,7 @@ typedef struct {
     unsigned int seed;
     FILE* readRecord;
     FILE* writeRecord;
+    long score;
 } Field;
 
 typedef struct CellNode {

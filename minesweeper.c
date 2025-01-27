@@ -31,6 +31,7 @@ Field* createField(int width, int height, int mines, unsigned int seed) {
     field->mines = mines;
     field->firstMove = true;
     field->state = INGAME;
+    field->score = 0;
 
     field->seed = seed;
 
@@ -188,6 +189,11 @@ void checkWin(Field* field) {
     }
 }
 
+void givePoints(Field* field) {
+    int scoreMult = (100*field->mines)/(field->width*field->height);
+    field->score += scoreMult;
+}
+
 void openCellLoop(Field* field, CellNode* listToOpen) {
     CellNode* current = listToOpen;
     CellNode* nextList = NULL;
@@ -198,6 +204,7 @@ void openCellLoop(Field* field, CellNode* listToOpen) {
         int y = current->y;
 
         field->grid[y][x].state = OPEN;
+        givePoints(field);
 
         if (countMines(field, x, y) == 0) {
             for (int i = y - 1; i <= y + 1; i++) {
@@ -205,6 +212,7 @@ void openCellLoop(Field* field, CellNode* listToOpen) {
                     Cell* neighbor = getCell(field, j, i);
                     if (neighbor != NULL && neighbor->state == CLOSED) {
                         neighbor->state = OPEN;
+                        givePoints(field);
                         nextList = addCellNode(nextList, neighbor, j, i);
                     }
                 }
@@ -252,8 +260,9 @@ bool openCell(Field* field, int x, int y) {
     }
 
     if (cell->isMine) {
+        cell->state = OPEN;
         field->state = LOOSE;
-        return false;
+        return true;
     }
 
     CellNode* listToOpen = (CellNode*)malloc(sizeof(CellNode));
@@ -357,4 +366,5 @@ void minesweeperLoop(Field* field) {
     }
     printField(field);
     printf("Game over! You %s the game!\n", (field->state == EXIT) ? "left" : ((field->state == WIN) ? "won" : "lost"));
+    printf("Your score: %ld\n", field->score);
 }
