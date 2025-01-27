@@ -3,5 +3,6 @@
 
 int numPlaces(int n);
 int getNthDigit(int number, int n);
+char* fixpath(char* path);
 
 #endif

@@ -32,6 +32,14 @@ Field* createField(int width, int height, int mines) {
     field->firstMove = true;
     field->state = INGAME;
 
+    field->seed = time(NULL);
+
+    field->readRecord = NULL;
+
+    char path[100] = "saves/records/latest.msrec";
+    fixpath(path);
+    field->writeRecord = fopen(path, "w");
+
     field->grid = malloc(height * sizeof(Cell*));
     for (int i = 0; i < height; i++) {
         field->grid[i] = malloc(width * sizeof(Cell));
@@ -41,6 +49,9 @@ Field* createField(int width, int height, int mines) {
             field->grid[i][j].symbol = '.';
         }
     }
+
+    fprintf(field->writeRecord, "%d %d %d\n", width, height, mines);
+    fprintf(field->writeRecord, "%d\n", field->seed);
 
     return field;
 }
@@ -81,6 +92,12 @@ void freeField(Field* field) {
         free(field->grid[i]);
     }
     free(field->grid);
+    if (field->readRecord != NULL) {
+        fclose(field->readRecord);
+    }
+    if (field->writeRecord != NULL) {
+        fclose(field->writeRecord);
+    }
     free(field);
 }
 
@@ -105,6 +122,7 @@ int countMines(Field* field, int x, int y) {
 }
 
 void populateField(Field* field, int x, int y) {
+    srand(field->seed);
     int mines = 0;
     while (mines < field->mines) {
         int i = rand() % field->height;
@@ -293,6 +311,7 @@ void runUserCommand(Field* field, char* action) {
     if (!success) {
         printf("Invalid command!\n");
     }
+    fprintf(field->writeRecord, "%s", action);
 }
 
 
@@ -308,6 +327,4 @@ void minesweeperLoop(Field* field) {
     }
     printField(field);
     printf("Game over! You %s!\n", field->state == WIN ? "won" : "lost");
-
-    freeField(field);
 }

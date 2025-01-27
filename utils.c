@@ -9,7 +9,16 @@ int numPlaces(int n) {
 }
 
 int getNthDigit(int number, int n) {
-    // Use abs() to handle negative numbers
     int digit = abs(number) / (int)pow(10, n - 1) % 10;
     return digit;
+}
+
+void fixpath(char* path) {
+    #ifdef _WIN32
+        for (int i = 0; path[i] != '\0'; i++) {
+            if (path[i] == '/') {
+                path[i] = '\\';
+            }
+        }
+    #endif
 }

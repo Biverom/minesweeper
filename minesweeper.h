@@ -22,6 +22,9 @@ typedef struct {
     int mines;
     bool firstMove;
     FieldState state;
+    unsigned int seed;
+    FILE* readRecord;
+    FILE* writeRecord;
 } Field;
 
 typedef struct CellNode {

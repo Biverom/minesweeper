@@ -37,12 +37,10 @@ void playGame() {
                     {
                         int rows, cols, numMines;
                         printf("Enter the number of rows, columns, and mines: ");
-                        if (scanf("%d %d %d", &rows, &cols, &numMines) != 3 || rows <= 0 || cols <= 0 || numMines <= 0 || numMines >= rows * cols) {
+                        if (scanf("%d %d %d\n", &rows, &cols, &numMines) != 3 || rows <= 0 || cols <= 0 || numMines <= 0 || numMines >= rows * cols) {
                             printf("Invalid input!\n");
-                            while(getchar() != '\n');
                             break;
-                        }
-                        while(getchar() != '\n');
+                        };
                         field = createField(rows, cols, numMines);
                         success = true;
                     }
@@ -63,6 +61,8 @@ void playGame() {
 
     if (field != NULL) {
         minesweeperLoop(field);
+
+        freeField(field);
     }
 }
 
