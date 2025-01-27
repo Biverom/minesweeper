@@ -56,6 +56,21 @@ Field* createField(int width, int height, int mines) {
     return field;
 }
 
+Field* createFieldFromRecord(FILE* record) {
+    int width, height, mines;
+    unsigned int seed;
+
+    fscanf(record, "%d %d %d\n", &width, &height, &mines);
+    fscanf(record, "%d\n", &seed);
+
+    Field* field = createField(width, height, mines);
+
+    field->seed = seed;
+    field->readRecord = record;
+
+    return field;
+}
+
 void printField(Field* field) {
 
     int widthDigits = numPlaces(field->width - 1);
@@ -262,7 +277,7 @@ bool toggleFlagOnCell(Field* field, int x, int y) {
     return true;
 }
 
-bool openCellCommand(Field* field, const char* action) {
+bool openCellCommand(Field* field, const char* action, bool isRecord) {
     int x, y;
     if (sscanf(action, "%*c %d %d", &x, &y) == 2) {
         bool success = openCell(field, x, y);
@@ -272,7 +287,7 @@ bool openCellCommand(Field* field, const char* action) {
     return false;
 }
 
-bool toggleFlagCommand(Field* field, const char* action) {
+bool toggleFlagCommand(Field* field, const char* action, bool isRecord) {
     int x, y;
     if (sscanf(action, "%*c %d %d", &x, &y) == 2) {
         return toggleFlagOnCell(field, x, y);
@@ -280,12 +295,16 @@ bool toggleFlagCommand(Field* field, const char* action) {
     return false;
 }
 
-bool leaveGameCommand(Field* field, const char* action) {
+bool leaveGameCommand(Field* field, const char* action, bool isRecord) {
+    if (isRecord) {
+        printf("Player exited the game\n");
+        return false;
+    }
     field->state = EXIT;
     return true;
 }
 
-void runUserCommand(Field* field, char* action) {
+void runUserCommand(Field* field, char* action, bool isRecord) {
     char command;
     bool success = false;
 
@@ -293,25 +312,27 @@ void runUserCommand(Field* field, char* action) {
         switch (command) {
             case 'o':
             case 'O':
-                success = openCellCommand(field, action);
+                success = openCellCommand(field, action, isRecord);
                 break;
 
             case 'f':
             case 'F':
-                success = toggleFlagCommand(field, action);
+                success = toggleFlagCommand(field, action, isRecord);
                 break;
 
             case 'x':
             case 'X':
-                success = leaveGameCommand(field, action);
+                success = leaveGameCommand(field, action, isRecord);
                 break;
         }
     }
 
-    if (!success) {
+    if (!success && !isRecord) {
         printf("Invalid command!\n");
     }
-    fprintf(field->writeRecord, "%s", action);
+    else {
+        fprintf(field->writeRecord, "%s", action);
+    }
 }
 
 
@@ -320,11 +341,20 @@ void minesweeperLoop(Field* field) {
         printField(field);
 
         char action[16] = "";
-        printf("Enter command: ");
-        fgets(action, sizeof(action), stdin);
-        runUserCommand(field, action);
+        bool isRecord = false;
+        if ((field->readRecord != NULL) && !feof(field->readRecord)) {
+            if (fgets(action, sizeof(action), field->readRecord) != NULL) {
+                printf("Enter command (recorded): %s\n", action);
+                isRecord = true;
+            }
+        } 
+        if (!isRecord) {
+            printf("Enter command: ");
+            fgets(action, sizeof(action), stdin);
+        }
+        runUserCommand(field, action, isRecord);
         printf("\n");
     }
     printField(field);
-    printf("Game over! You %s!\n", field->state == WIN ? "won" : "lost");
+    printf("Game over! You %s the game!\n", (field->state == EXIT) ? "left" : ((field->state == WIN) ? "won" : "lost"));
 }

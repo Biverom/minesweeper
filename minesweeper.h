@@ -36,6 +36,8 @@ typedef struct CellNode {
 
 CellNode* addCellNode(CellNode* list, Cell* cell, int x, int y);
 Field* createField(int width, int height, int mines);
+Field* createFieldFromRecord(FILE* record);
+
 void printField(Field* field);
 void freeField(Field* field);
 Cell* getCell(Field* field, int x, int y);
@@ -47,10 +49,12 @@ void checkWin(Field* field);
 void openCellLoop(Field* field, CellNode* listToOpen);
 bool openCell(Field* field, int x, int y);
 bool toggleFlagOnCell(Field* field, int x, int y);
-bool openCellCommand(Field* field, const char* action);
-bool toggleFlagCommand(Field* field, const char* action);
-bool leaveGameCommand(Field* field, const char* action);
-void runUserCommand(Field* field, char* action);
+
+bool openCellCommand(Field* field, const char* action, bool isRecord);
+bool toggleFlagCommand(Field* field, const char* action, bool isRecord);
+bool leaveGameCommand(Field* field, const char* action, bool isRecord);
+void runUserCommand(Field* field, char* action, bool isRecord);
+
 void minesweeperLoop(Field* field);
 
 #endif

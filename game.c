@@ -1,8 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "minesweeper.h"
+
+void handleGame(Field* field) {
+    if (field != NULL) {
+        minesweeperLoop(field);
+
+        freeField(field);
+    }
+}
 
 void playGame() {
     Field *field = NULL;
@@ -59,18 +68,34 @@ void playGame() {
         }
     }
 
-    if (field != NULL) {
-        minesweeperLoop(field);
+    handleGame(field);
+}
 
-        freeField(field);
+void playRecord() {
+    printf("Enter the name of the record file: ");
+    char name[100];
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = 0;
+
+    char path[150];
+    snprintf(path, sizeof(path), "saves/records/%s.msrec", name);
+
+    FILE* record = fopen(path, "r");
+    if (record == NULL) {
+        printf("Invalid record file!\n");
+        return;
     }
+
+    Field* field = createFieldFromRecord(record);
+
+    handleGame(field);
 }
 
 void gameLoop() {
     bool close = false;
     while (!close)
     {
-        printf("\nWelcome to Minesweeper!\nWhat would you like to do?\n[P] Play\n[R] Watch replay\n[X] Exit\n");
+        printf("\nWelcome to Minesweeper!\nWhat would you like to do?\n[P] Play\n[R] Play record\n[X] Exit\n");
         char input[100];
         fgets(input, sizeof(input), stdin);
 
@@ -83,7 +108,7 @@ void gameLoop() {
                     break;
                 case 'r':
                 case 'R':
-                    printf("Replay\n");
+                    playRecord();
                     break;
                 case 'x':
                 case 'X':
