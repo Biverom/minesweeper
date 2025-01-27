@@ -4,29 +4,36 @@
 #include <string.h>
 
 #include "utils.h"
+#include "leaderboard.h"
 
 #include "minesweeper.h"
 
 void handleGame(Field* field) {
     if (field != NULL) {
         minesweeperLoop(field);
-
+        long score = field->score;
         freeField(field);
 
         printf("Provide a name for the record (Leave empty to not save): ");
-        char name[100];
-        fgets(name, sizeof(name), stdin);
-
-        name[strcspn(name, "\n")] = '\0';
-
-        if (name[0] != '\0') {
+        char recordName[100];
+        fgets(recordName, sizeof(recordName), stdin);
+        recordName[strcspn(recordName, "\n")] = '\0';
+        if (recordName[0] != '\0') {
             char destPath[150];
-            snprintf(destPath, sizeof(destPath), "saves/records/%s.msrec", name);
+            snprintf(destPath, sizeof(destPath), "saves/records/%s.msrec", recordName);
             char sourcePath[] = "saves/records/latest.msrec";
             fixpath(destPath);
             fixpath(sourcePath);
             copyFile(sourcePath, destPath);
             printf("Record saved!\n");
+        }
+
+        printf("Write your name for leaderboard (15 symbols max) (Leave empty to not add): ");
+        char leaderName[16];
+        fgets(leaderName, sizeof(leaderName), stdin);
+        leaderName[strcspn(leaderName, "\n")] = '\0';
+        if (leaderName[0] != '\0') {
+            leaderboardAddScore(leaderName, score);
         }
     }
 }
